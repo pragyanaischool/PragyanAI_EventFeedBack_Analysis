@@ -7,3 +7,7 @@ streamlit-autorefresh
 requests
 opencv-python-headless
 Pillow
+SpeechRecognition
+pydub
+groq
+mediapipe
