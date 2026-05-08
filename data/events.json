@@ -1,0 +1,42 @@
+{
+    "Multi-Agent AI Systems": {
+        "trainer": "Sateesh Ambesange",
+        "topics": "Large Language Models (LLMs), RAG Architecture, AutoGen Framework, CrewAI, Agentic Workflows",
+        "date_added": "2024-05-10",
+        "start_date": "2024-06-01",
+        "end_date": "2024-06-05",
+        "location": "GNDEC, Bidar"
+    },
+    "Python - Audio, Video - Projects": {
+        "trainer": "Sateesh Ambesange",
+        "topics": "Python Foundation, GitHub/Streamlit, Deployment & APP, Audio Processing, Video Processing, Real world Projects and Hackathon",
+        "date_added": "2026-05-4",
+        "start_date": "2026-05-04",
+        "end_date": "2026-05-09",
+        "location": "VVIET, Mysore"
+    },
+    "Edge Intelligence": {
+        "trainer": "Priya Kulkarni",
+        "topics": "ESP32 Microcontrollers, MicroPython, MQTT Protocol, TinyML, Sensor Fusion",
+        "date_added": "2024-05-12",
+        "start_date": "2024-06-10",
+        "end_date": "2024-06-12",
+        "location": "RVCE, Bengaluru"
+    },
+    "PCB Automation": {
+        "trainer": "Dr. Ramesh Babu",
+        "topics": "KiCad Advanced Schematic, High-Speed Layout, Auto-routing Algorithms, BOM Optimization",
+        "date_added": "2024-05-15",
+        "start_date": "2024-06-15",
+        "end_date": "2024-06-18",
+        "location": "BMSCE, Bengaluru"
+    },
+    "Full-Stack AI Deployment": {
+        "trainer": "Arjun Mehta",
+        "topics": "Streamlit Framework, FastAPI, Docker Containerization, AWS Deployment, GitHub Actions",
+        "date_added": "2024-05-18",
+        "start_date": "2024-06-20",
+        "end_date": "2024-06-25",
+        "location": "PragyanAI Hub, Bengaluru"
+    }
+}
