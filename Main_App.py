@@ -1,145 +1,134 @@
-import pandas as pd
-from textblob import TextBlob
-import collections
-import re
-import time
-import json
-import base64
-import requests
 import streamlit as st
+import os
+from data_utils import init_folders
 
-# Secure API Configuration from Streamlit Secrets
-# Ensure you have "GROQ_API_KEY" set in your .streamlit/secrets.toml
-GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "") 
-MODEL_TEXT = "llama-3.3-70b-versatile"
-MODEL_VISION = "meta-llama/llama-4-scout-17b-16e-instruct"
+# Initialize the data environment and folder structure
+init_folders()
 
-def call_groq_llama_api(prompt, system_instruction="You are an AI analyst.", is_vision=False, image_base64=None):
-    """
-    Calls the Groq API using Llama 3 models with exponential backoff.
-    Handles both standard text completion and multimodal vision tasks.
-    """
-    if not GROQ_API_KEY:
-        return "Error: GROQ_API_KEY missing in Streamlit secrets."
+# ============================================================
+# GLOBAL CONFIGURATION
+# ============================================================
+st.set_page_config(
+    page_title="PragyanAI Modular Intelligence",
+    layout="wide",
+    page_icon="🧠",
+    initial_sidebar_state="expanded"
+)
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
+# Global Constants
+ADMIN_KEY = "PRAGYANAI"
+
+# Initialize Session States for Authentication and Navigation
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'user' not in st.session_state:
+    st.session_state.user = None
+if 'step' not in st.session_state:
+    st.session_state.step = 1
+if 'backend_running' not in st.session_state:
+    st.session_state.backend_running = False
+
+# Custom CSS for Premium Branding (Black & White Theme)
+st.markdown("""
+<style>
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] { 
+        background-color: #000000; 
+        color: white; 
+    }
+    [data-testid="stSidebar"] * { 
+        color: white !important; 
+    }
+    
+    /* Button Styling */
+    .stButton>button { 
+        width: 100%; 
+        border-radius: 20px; 
+        font-weight: bold; 
+        height: 3em; 
+        background-color: black !important; 
+        color: white !important; 
+        border: 1px solid white;
+    }
+    .stButton>button:hover {
+        background-color: #333333 !important;
+        border: 1px solid #555555;
     }
 
-    if is_vision and image_base64:
-        messages = [
-            {"role": "system", "content": system_instruction},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/png;base64,{image_base64}"}
-                    }
-                ]
-            }
-        ]
-        model = MODEL_VISION
+    /* Header and Text Styling */
+    .main-header { 
+        font-size: 2.5rem; 
+        font-weight: 800; 
+        color: #1a1a1a; 
+        margin-bottom: 0; 
+    }
+    .sub-header { 
+        color: #666; 
+        margin-top: -10px; 
+        margin-bottom: 30px; 
+    }
+    
+    /* Card Styling */
+    .metric-card { 
+        background: #f8f9fa; 
+        padding: 20px; 
+        border-radius: 12px; 
+        border-left: 6px solid black; 
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    /* Input Fields */
+    input, textarea {
+        border-radius: 10px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
+# MODULAR ROUTING LOGIC
+# ============================================================
+def main():
+    st.sidebar.title("PragyanAI 🚀")
+    st.sidebar.markdown("---")
+    
+    # Navigation logic based on authentication status
+    if not st.session_state.authenticated:
+        page = st.sidebar.radio("Navigation", ["Student Access", "Admin Gateway"])
     else:
-        messages = [
-            {"role": "system", "content": system_instruction},
-            {"role": "user", "content": prompt}
-        ]
-        model = MODEL_TEXT
+        # Determine Menu based on assigned role
+        role = st.session_state.user.get('role', 'student')
+        if role == 'admin':
+            page = st.sidebar.radio("Workspace", ["Intelligence Suite", "Event Manager", "Logout"])
+        else:
+            page = st.sidebar.radio("Workspace", ["Dashboard", "Feedback Center", "Logout"])
 
-    payload = {
-        "model": model,
-        "messages": messages,
-        "temperature": 0.5,
-        "max_tokens": 1024
-    }
+    # Logout Procedure
+    if page == "Logout":
+        st.session_state.authenticated = False
+        st.session_state.user = None
+        st.session_state.step = 1
+        st.rerun()
 
-    # Exponential backoff (1s, 2s, 4s, 8s, 16s)
-    for i in range(5):
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
-            if response.status_code == 200:
-                result = response.json()
-                return result['choices'][0]['message']['content']
-            elif response.status_code == 429: # Rate limit
-                pass
-        except Exception:
-            pass
-        time.sleep(2**i)
-    
-    return "Analysis Error: API Connection timeout or limit reached."
+    # Import modules dynamically to ensure isolated execution
+    # These imports reference the files in the same directory/src
+    try:
+        from student_portal import render_student_flow
+        from admin_intelligence import render_admin_suite
+    except ImportError as e:
+        st.error(f"Module Loading Error: {e}")
+        st.info("Ensure all module files (student_portal.py, admin_intelligence.py, etc.) are in the same directory.")
+        return
 
-def perform_sentiment_analysis(text):
-    """Analyzes text and returns a label and polarity score."""
-    if not text or pd.isna(text):
-        return "Neutral", 0.0
-    
-    analysis = TextBlob(str(text))
-    polarity = analysis.sentiment.polarity
-    
-    if polarity > 0.1:
-        return "Positive", polarity
-    elif polarity < -0.1:
-        return "Negative", polarity
-    else:
-        return "Neutral", polarity
+    # Page Routing
+    if page in ["Student Access", "Dashboard", "Feedback Center"]:
+        render_student_flow()
+    elif page in ["Admin Gateway", "Intelligence Suite", "Event Manager"]:
+        render_admin_suite()
 
-def extract_keywords(text_series, top_n=15):
-    """Extracts frequent words for Bar Charts and Word Cloud data."""
-    words = []
-    # Stop words to filter out common educational/filler terms
-    stop_words = {
-        'the', 'and', 'was', 'were', 'for', 'with', 'this', 'that', 'session', 
-        'workshop', 'event', 'very', 'good', 'great', 'really', 'also', 'from',
-        'teaching', 'content', 'topic', 'topics', 'learned', 'learning'
-    }
-    
-    for text in text_series:
-        if pd.notna(text):
-            # Clean and tokenize
-            clean_text = re.sub(r'[^\w\s]', '', str(text).lower())
-            words.extend([w for w in clean_text.split() if w not in stop_words and len(w) > 3])
-    
-    return collections.Counter(words).most_common(top_n)
+    # Footer Branding
+    st.sidebar.markdown("---")
+    st.sidebar.caption("© 2026 PragyanAI School of Intelligence")
 
-def analyze_narrative_feedback(transcript):
-    """Uses Llama 3 via Groq to extract specific Pros and Cons from a transcript."""
-    prompt = (
-        "Analyze this student feedback. "
-        "Extract specific things they LIKED and things they DID NOT LIKE or found CHALLENGING. "
-        "Format your response as:\n"
-        "LIKES: [bullet points]\n"
-        "DISLIKES: [bullet points]\n\n"
-        f"Feedback: {transcript}"
-    )
-    return call_groq_llama_api(prompt, "You are a specialized feedback analyst.")
-
-def generate_dynamic_summary(df):
-    """Generates a text summary with granular rating and sentiment insights."""
-    if df.empty:
-        return "System is ready. Awaiting data streams..."
-    
-    total = len(df)
-    avg_rating = df['Rating_Overall'].mean() if 'Rating_Overall' in df.columns else 0
-    sentiment_counts = df['Sentiment'].value_counts().to_dict()
-    pos_percent = (sentiment_counts.get('Positive', 0) / total) * 100 if total > 0 else 0
-    
-    summary = f"**Llama-Powered Intelligence Summary:**\n\n"
-    summary += f"- **Processed:** {total} feedback records.\n"
-    summary += f"- **Satisfaction Score:** **{avg_rating:.1f}/5 Stars**.\n"
-    summary += f"- **Sentiment Engine:** {pos_percent:.1f}% positive feedback loop detected.\n"
-    
-    if 'Trainer' in df.columns and not df['Trainer'].empty:
-        top_trainer = df.groupby('Trainer')['Rating_Overall'].mean().idxmax()
-        summary += f"- **Star Performer:** {top_trainer} is leading in student satisfaction."
-        
-    return summary
-
-def analyze_image_with_feedback(base64_image, transcript):
-    """Multimodal analysis using Llama 3.2 Vision via Groq."""
-    prompt = f"Verify if this image provides evidence for the following claim: '{transcript}'"
-    return call_groq_llama_api(prompt, "You are a vision analysis agent.", is_vision=True, image_base64=base64_image)
-    
+if __name__ == "__main__":
+    main()
