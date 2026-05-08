@@ -1,0 +1,9 @@
+streamlit
+pandas
+textblob
+plotly
+openpyxl
+streamlit-autorefresh
+requests
+opencv-python-headless
+Pillow
