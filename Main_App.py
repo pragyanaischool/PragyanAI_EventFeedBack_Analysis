@@ -11,8 +11,8 @@ import streamlit as st
 # Secure API Configuration from Streamlit Secrets
 # Ensure you have "GROQ_API_KEY" set in your .streamlit/secrets.toml
 GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", "") 
-MODEL_TEXT = "llama3-70b-8192"
-MODEL_VISION = "llama-3.2-11b-vision-preview"
+MODEL_TEXT = "llama-3.3-70b-versatile"
+MODEL_VISION = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 def call_groq_llama_api(prompt, system_instruction="You are an AI analyst.", is_vision=False, image_base64=None):
     """
