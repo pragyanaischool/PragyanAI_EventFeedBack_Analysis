@@ -31,6 +31,12 @@ if 'backend_running' not in st.session_state:
 # Custom CSS for Premium Branding (Black & White Theme)
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
+    html, body, [class*="st-"] {
+        font-family: 'Inter', sans-serif;
+    }
+
     /* Sidebar Styling */
     [data-testid="stSidebar"] { 
         background-color: #000000; 
@@ -43,44 +49,89 @@ st.markdown("""
     /* Button Styling */
     .stButton>button { 
         width: 100%; 
-        border-radius: 20px; 
-        font-weight: bold; 
-        height: 3em; 
+        border-radius: 12px; 
+        font-weight: 700; 
+        height: 3.5em; 
         background-color: black !important; 
         color: white !important; 
-        border: 1px solid white;
+        border: 2px solid #333;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     .stButton>button:hover {
-        background-color: #333333 !important;
-        border: 1px solid #555555;
+        background-color: #222 !important;
+        border: 2px solid white;
+        transform: translateY(-2px);
     }
 
     /* Header and Text Styling */
     .main-header { 
-        font-size: 2.5rem; 
+        font-size: 2.8rem; 
         font-weight: 800; 
-        color: #1a1a1a; 
-        margin-bottom: 0; 
+        color: #000000; 
+        margin-bottom: 5px;
+        letter-spacing: -1px;
     }
     .sub-header { 
-        color: #666; 
-        margin-top: -10px; 
-        margin-bottom: 30px; 
+        font-size: 1.2rem;
+        color: #555; 
+        margin-top: 0px; 
+        margin-bottom: 35px;
+        font-weight: 400;
     }
     
-    /* Card Styling */
+    .section-header {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #000;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    /* Card Styling - Optimized for Workshop Details */
     .metric-card { 
-        background: #f8f9fa; 
-        padding: 20px; 
-        border-radius: 12px; 
-        border-left: 6px solid black; 
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        background: #ffffff; 
+        padding: 25px; 
+        border-radius: 16px; 
+        border: 1px solid #eaeaea;
+        border-left: 8px solid black; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
     }
     
-    /* Input Fields */
-    input, textarea {
-        border-radius: 10px !important;
+    .metric-card h4 {
+        margin-top: 0;
+        font-size: 1.6rem;
+        font-weight: 800;
+    }
+
+    .metric-card p {
+        margin: 5px 0;
+        font-size: 1rem;
+        color: #444;
+    }
+
+    /* Input Fields & Text Areas */
+    .stTextArea textarea, .stTextInput input {
+        border-radius: 12px !important;
+        border: 1px solid #ddd !important;
+        padding: 15px !important;
+    }
+    
+    .stTextArea textarea:focus, .stTextInput input:focus {
+        border-color: black !important;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Rating Labels Styling */
+    .rating-label {
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 5px;
+        display: block;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -111,7 +162,6 @@ def main():
         st.rerun()
 
     # Import modules dynamically to ensure isolated execution
-    # These imports reference the files in the same directory/src
     try:
         from student_portal import render_student_flow
         from admin_intelligence import render_admin_suite
@@ -132,3 +182,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
